@@ -1,16 +1,14 @@
 <?php
 
-namespace Acme\UTFMail;
+namespace Denismitr\UTFMail;
 
 class UTFMail {
 
-	private $title = '(No title)';
+	private $subject = '(No subject)';
 	private $to = '';
 	private $fromName = '';
 	private $fromEmail = '';
 	private $htmlBody = '';
-	private $titlePrefix = '';
-	private $bodyPrefix = '';
 
 
 	public function __construct($to)
@@ -30,60 +28,27 @@ class UTFMail {
 
 
 	/**
-	 * @param $prefix
+	 * @param $subject
 	 * @return $this
 	 */
-	public function prefixTitle($prefix)
+	public function subject($subject)
 	{
-		if (!empty($prefix))
-		{
-			$this->titlePrefix = $prefix;
-		}
+		$this->subject = $subject;
 
 		return $this;
-	}
-
-
-	/**
-	 * @param $prefix
-	 * @return $this
-	 */
-	public function prefixBody($prefix)
-	{
-	    if (!empty($prefix))
-		{
-			$this->bodyPrefix = '<h3>' . $prefix . '</h3>';
-		}
-
-		return $this;
-	}
-
-
-	/**
-	 * @param $title
-	 * @param string $prefix
-	 * @return $this
-	 */
-	public function title($title, $prefix = '')
-	{
-		$this->title = $title;
-
-		return $this->prefixTitle($prefix);
 	}
 
 
 	/**
 	 * @param $htmlBody
-	 * @param string $prefix
-	 * @return UTFMail
+	 * @return $this
 	 */
-	public function body($htmlBody, $prefix = '')
+	public function body($htmlBody)
 	{
-		$this->htmlBody = nl2br($htmlBody);
+		$this->htmlBody = $htmlBody;
 
-		return $this->prefixBody($prefix);
+		return $this;
 	}
-
 
 
 	/**
@@ -100,20 +65,17 @@ class UTFMail {
 	}
 
 
-
-
 	/**
-	 * @return bool
+	 * @throws UTFMailException
 	 */
 	public function send() {
 
 		if (empty($this->fromEmail) || empty($this->fromName) || empty($this->htmlBody) || empty($this->to)) {
-			return false;
+			throw new UTFMailException("Wrong arguments passed into UTFMailer");
 		}
 
 		$this->fromName = "=?UTF-8?B?".base64_encode($this->fromName)."?=";
-		$this->title = "=?UTF-8?B?".base64_encode($this->titlePrefix . ' ' . $this->title)."?=";
-		$this->htmlBody = $this->bodyPrefix . '<br>' . $this->htmlBody;
+		$this->subject = "=?UTF-8?B?".base64_encode($this->subject)."?=";
 
 		$headers = array();
 		$headers[] = "MIME-Version: 1.0";
@@ -124,11 +86,13 @@ class UTFMail {
 		$headers[] = "From: {$this->fromName} <{$this->fromEmail}>";
 		$headers[] = "Reply-To: {$this->fromName} <{$this->fromEmail}>";
 		$headers[] = "Return-Path: {$this->fromEmail}";
-		$headers[] = "Subject: {$this->title}";
+		$headers[] = "Subject: {$this->subject}";
 		$headers[] = "X-Mailer: PHP v".phpversion();
 		$headers[] = "X-Originating-IP: ".$_SERVER['SERVER_ADDR'];
 
-		return mail($this->to, $this->title, $this->htmlBody, implode("\r\n", $headers));
+		if ( ! mail($this->to, $this->subject, $this->htmlBody, implode("\r\n", $headers))) {
+			throw new UTFMailException("PHP Mail function failed");
+		}
 	}
 
 }
