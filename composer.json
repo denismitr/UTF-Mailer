@@ -1,0 +1,21 @@
+{
+    "name": "denismitr/utf-mailer",
+    "description": "My Mailer that avoids all the spam filters",
+    "license": "MIT",
+    "keywords": ["php", "mail"],
+    "authors": [
+        {
+            "name": "Denis Mitrofanov",
+            "email": "denis.mitr@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Denismitr\\UTFMail\\": "src/"
+        }
+    }
+}
